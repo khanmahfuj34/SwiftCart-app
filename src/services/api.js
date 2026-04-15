@@ -1,16 +1,15 @@
 // eslint-disable-next-line import/no-unresolved
 import axios from "axios";
 
-// 👉 simple base URL
+// 👉 base URL for Platzi Fake Store API
 const api = axios.create({
-    baseURL: "https://fakestoreapi.com",
-    timeout: 5000,
+    baseURL: "https://api.escuelajs.co/api/v1",
+    timeout: 10000,
 });
 
 // 🔥 All API functions
 export const productAPI = {
-
-    // সব product
+    // get all products
     getAllProducts: async() => {
         try {
             const response = await api.get("/products");
@@ -35,7 +34,7 @@ export const productAPI = {
     // category list
     getCategories: async() => {
         try {
-            const response = await api.get("/products/categories");
+            const response = await api.get("/categories");
             return response.data;
         } catch (error) {
             console.log("Error fetching categories:", error.message);
@@ -43,10 +42,10 @@ export const productAPI = {
         }
     },
 
-    // category wise product
-    getProductsByCategory: async(category) => {
+    // category wise products
+    getProductsByCategory: async(categoryId) => {
         try {
-            const response = await api.get(`/products/category/${category}`);
+            const response = await api.get(`/categories/${categoryId}/products`);
             return response.data;
         } catch (error) {
             console.log("Error fetching category products:", error.message);
