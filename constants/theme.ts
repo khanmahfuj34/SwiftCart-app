@@ -1,37 +1,38 @@
 /**
- * SwiftCart Premium Design System
- * Modern, luxury e-commerce theme with soft blues and clean whites
+ * SwiftCart Grocery Design System
+ * Fresh, organic theme with natural greens and clean market-style layout
  */
 
 import { Platform } from "react-native";
 
-// Premium Color Palette
+// Organic Grocery Color Palette
 export const Colors = {
-  // Primary Colors
-  primary: "#DDEFFD", // Soft Sky Blue
-  accent: "#0F172A", // Deep Navy
+  // Primary Colors - Fresh Greens
+  primary: "#10B981", // Fresh Green (accent)
+  accent: "#059669", // Darker Green
   secondary: "#FFFFFF", // Clean White
 
   // Secondary Colors
-  lightGray: "#F7F8FA", // Light Gray Background
-  muted: "#8B92A5", // Muted Gray Text
-  success: "#16A34A", // Success Green
+  lightGray: "#F9FBF6", // Light Cream/White
+  muted: "#6B7563", // Muted Green-Gray Text
+  success: "#16A34A", // Fresh Green
   warning: "#F59E0B", // Warning Amber
   error: "#DC2626", // Error Red
+  fresh: "#34D399", // Fresh Light Green
 
   // Text Colors
   text: {
-    primary: "#0F172A",
-    secondary: "#6B7280",
-    muted: "#9CA3AF",
+    primary: "#1F2937", // Dark Gray
+    secondary: "#6B7563", // Muted Green
+    muted: "#9CA8A0", // Light Gray
   },
 
   // Background Colors
   background: {
     light: "#FFFFFF",
-    lighter: "#F7F8FA",
-    softBlue: "#F0F6FF",
-    softerBlue: "#F8FAFB",
+    lighter: "#F9FBF6", // Cream/Natural
+    softGreen: "#F0FDF4", // Very Light Green
+    softerGreen: "#F7FFFD", // Off-white Green
   },
 
   // Shadows & Borders
@@ -39,8 +40,8 @@ export const Colors = {
 
   // Gradient Palettes
   gradients: {
-    skyBlue: ["#DDEFFD", "#B8D4FF"],
-    navyAccent: ["#0F172A", "#1F2937"],
+    greenFresh: ["#10B981", "#059669"],
+    organicNatural: ["#059669", "#047857"],
   },
 };
 

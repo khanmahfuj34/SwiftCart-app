@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
     ActivityIndicator,
-    Dimensions,
     Image,
     SafeAreaView,
     ScrollView,
@@ -17,23 +16,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BorderRadius, Colors, Shadows, Spacing } from "../../constants/theme";
 import CategoryList from "../../src/components/CategoryList";
+import GroceryProductCard from "../../src/components/GroceryProductCard";
 import SearchBar from "../../src/components/SearchBar";
 import SideDrawer from "../../src/components/SideDrawer";
-import { PremiumCard } from "../../src/components/ui";
-import { useCart } from "../../src/context/CartContext";
 import { useDrawer } from "../../src/context/DrawerContext";
-import { useWishlist } from "../../src/context/WishlistContext";
 import { useProducts } from "../../src/hooks/useProducts";
-
-const { width } = Dimensions.get("window");
-const CARD_WIDTH = (width - Spacing.xl * 2 - Spacing.lg) / 2;
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { products, categories, loading: productsLoading } = useProducts();
-  const { cartItems, addToCart } = useCart();
-  const { wishlistItems, addToWishlist, removeFromWishlist } = useWishlist();
   const { drawerVisible, setDrawerVisible } = useDrawer();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +33,7 @@ export default function HomeScreen() {
 
   const totalItems = useMemo(
     () => cartItems.reduce((total, item) => total + (item.quantity || 1), 0),
-    [cartItems],
+    [],
   );
 
   // Optimized product filtering
@@ -62,108 +54,17 @@ export default function HomeScreen() {
   const trendingProducts = filteredProducts.slice(3, 12);
   const allProducts = filteredProducts; // Show all filtered products
 
-  // Check if item is in cart
-  const isItemInCart = (productId) => {
-    return cartItems.some((item) => item.id === productId);
-  };
-
-  // Check if item is in wishlist
-  const isItemInWishlist = (productId) => {
-    return wishlistItems.some((item) => item.id === productId);
-  };
-
-  // Handle wishlist toggle
-  const handleWishlistToggle = (e, product) => {
-    e.stopPropagation();
-    if (isItemInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
-  };
-
-  // Handle add to cart
-  const handleAddToCart = (e, product) => {
-    e.stopPropagation();
-    addToCart(product);
-  };
-
   const renderProductCard = (product) => {
-    const inCart = isItemInCart(product.id);
-    const inWishlist = isItemInWishlist(product.id);
-
     return (
-      <TouchableOpacity
-        key={product.id}
-        style={styles.productCardWrapper}
-        onPress={() => router.push(`/product/${product.id}`)}
-        activeOpacity={0.85}
-      >
-        <PremiumCard style={styles.productCard}>
-          {/* Image Container with Wishlist Button */}
-          <View style={styles.productImageContainer}>
-            <Image
-              source={{ uri: product.images?.[0] || product.image }}
-              style={styles.productImage}
-              resizeMode="cover"
-            />
-
-            {/* Wishlist Button - Top Right */}
-            <TouchableOpacity
-              style={styles.wishlistButton}
-              onPress={(e) => handleWishlistToggle(e, product)}
-            >
-              <Ionicons
-                name={inWishlist ? "heart" : "heart-outline"}
-                size={22}
-                color={inWishlist ? "#EF4444" : "#FFFFFF"}
-              />
-            </TouchableOpacity>
-
-            {/* Add to Cart Button - Bottom Right */}
-            <TouchableOpacity
-              style={[styles.addButton, inCart && styles.addButtonActive]}
-              onPress={(e) => handleAddToCart(e, product)}
-              disabled={inCart}
-            >
-              <Ionicons
-                name={inCart ? "checkmark-circle" : "add-circle"}
-                size={28}
-                color={inCart ? "#10B981" : Colors.accent}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Product Info */}
-          <View style={styles.productInfo}>
-            <Text style={styles.productCategory} numberOfLines={1}>
-              {product.category?.name || "PRODUCTS"}
-            </Text>
-            <Text style={styles.productTitle} numberOfLines={2}>
-              {product.title || "Product"}
-            </Text>
-
-            {/* Price and Status */}
-            <View style={styles.priceRow}>
-              <Text style={styles.productPrice}>
-                ৳{parseFloat(product.price || 0).toFixed(2)}
-              </Text>
-              {inCart && (
-                <View style={styles.cartStatusBadge}>
-                  <Ionicons name="checkmark-done" size={12} color="#10B981" />
-                  <Text style={styles.cartStatusText}>In Cart</Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </PremiumCard>
-      </TouchableOpacity>
+      <View key={product.id} style={styles.productCardWrapper}>
+        <GroceryProductCard product={product} />
+      </View>
     );
   };
 
   return (
     <LinearGradient
-      colors={["#FFFFFF", Colors.background.softerBlue]}
+      colors={[Colors.secondary, Colors.background.softerGreen]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={styles.container}
@@ -295,85 +196,21 @@ export default function HomeScreen() {
 
           {/* Flash Sale Banner */}
           {!productsLoading && filteredProducts.length > 0 && (
-            <View style={styles.flashSaleSection}>
+            <View style={styles.promoBanner}>
               <LinearGradient
-                colors={[Colors.accent, "#1F2937"]}
+                colors={[Colors.accent, Colors.primary]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.flashSaleBanner}
+                style={styles.promoBannerContent}
               >
                 <View>
-                  <Text style={styles.flashSaleLabel}>⚡ FLASH SALE</Text>
-                  <Text style={styles.flashSaleTitle}>Up to 50% OFF</Text>
-                  <Text style={styles.flashSaleSubtitle}>
-                    Limited time offer
+                  <Text style={styles.promoLabel}>🥬 FRESH DEALS</Text>
+                  <Text style={styles.promoTitle}>Up to 40% OFF</Text>
+                  <Text style={styles.promoSubtitle}>
+                    Fresh vegetables daily
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.flashSaleButton}>
-                  <Text style={styles.flashSaleButtonText}>Shop Now</Text>
-                </TouchableOpacity>
               </LinearGradient>
-            </View>
-          )}
-
-          {/* Recommended Section */}
-          {!productsLoading && trendingProducts.length > 4 && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Recommended For You</Text>
-              </View>
-
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.recommendedScroll}
-              >
-                {trendingProducts.slice(4, 8).map((product) => (
-                  <TouchableOpacity
-                    key={product.id}
-                    style={styles.recommendedCardWrapper}
-                    onPress={() => router.push(`/product/${product.id}`)}
-                    activeOpacity={0.85}
-                  >
-                    <PremiumCard
-                      variant="elevated"
-                      style={styles.recommendedCard}
-                    >
-                      <View style={styles.recommendedImageContainer}>
-                        <Image
-                          source={{ uri: product.images?.[0] || product.image }}
-                          style={styles.recommendedImage}
-                          resizeMode="cover"
-                        />
-                        <TouchableOpacity
-                          style={styles.recommendedWishlist}
-                          onPress={(e) => handleWishlistToggle(e, product)}
-                        >
-                          <Ionicons
-                            name={
-                              isItemInWishlist(product.id)
-                                ? "heart"
-                                : "heart-outline"
-                            }
-                            size={18}
-                            color={
-                              isItemInWishlist(product.id)
-                                ? "#EF4444"
-                                : Colors.accent
-                            }
-                          />
-                        </TouchableOpacity>
-                      </View>
-                      <Text style={styles.recommendedTitle} numberOfLines={2}>
-                        {product.title}
-                      </Text>
-                      <Text style={styles.recommendedPrice}>
-                        ৳{parseFloat(product.price || 0).toFixed(2)}
-                      </Text>
-                    </PremiumCard>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
             </View>
           )}
 
@@ -382,7 +219,7 @@ export default function HomeScreen() {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>
-                  {activeCategory ? "Category Products" : "All Products"}
+                  {activeCategory ? "Category Products" : "Fresh Produce"}
                 </Text>
               </View>
 
@@ -566,101 +403,19 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: Colors.accent,
   },
-  productGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: Spacing.md,
-  },
   productCardWrapper: {
-    width: CARD_WIDTH,
+    width: "100%",
     marginBottom: Spacing.sm,
   },
-  productCard: {
-    overflow: "hidden",
+  productGrid: {
+    flexDirection: "column",
+    gap: Spacing.md,
   },
-  productImageContainer: {
-    width: "100%",
-    height: CARD_WIDTH,
-    backgroundColor: Colors.background.lighter,
-    borderRadius: BorderRadius.lg,
-    overflow: "hidden",
-    marginBottom: Spacing.md,
-    position: "relative",
-  },
-  productImage: {
-    width: "100%",
-    height: "100%",
-  },
-  wishlistButton: {
-    position: "absolute",
-    top: Spacing.md,
-    right: Spacing.md,
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.full,
-    backgroundColor: "rgba(0, 0, 0, 0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-    ...Shadows.md,
-  },
-  addButton: {
-    position: "absolute",
-    bottom: Spacing.md,
-    right: Spacing.md,
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.full,
-    ...Shadows.md,
-  },
-  addButtonActive: {
-    backgroundColor: "rgba(16, 185, 129, 0.9)",
-  },
-  productInfo: {
-    gap: Spacing.xs,
-  },
-  productCategory: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: Colors.muted,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  productTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.text.primary,
-    lineHeight: 18,
-  },
-  priceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: Spacing.sm,
-  },
-  productPrice: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: Colors.accent,
-  },
-  cartStatusBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#D1F2EB",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: BorderRadius.md,
-  },
-  cartStatusText: {
-    fontSize: 10,
-    fontWeight: "600",
-    color: "#10B981",
-  },
-  flashSaleSection: {
+  promoBanner: {
     paddingHorizontal: Spacing.lg,
     marginVertical: Spacing.xl,
   },
-  flashSaleBanner: {
+  promoBannerContent: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -669,75 +424,21 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     ...Shadows.lg,
   },
-  flashSaleLabel: {
+  promoLabel: {
     fontSize: 12,
     fontWeight: "700",
     color: Colors.secondary,
     marginBottom: Spacing.xs,
   },
-  flashSaleTitle: {
+  promoTitle: {
     fontSize: 24,
     fontWeight: "700",
     color: Colors.secondary,
   },
-  flashSaleSubtitle: {
+  promoSubtitle: {
     fontSize: 12,
     color: "rgba(255, 255, 255, 0.8)",
     marginTop: Spacing.xs,
-  },
-  flashSaleButton: {
-    backgroundColor: Colors.secondary,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-  },
-  flashSaleButtonText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: Colors.accent,
-  },
-  recommendedScroll: {
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.lg,
-  },
-  recommendedCardWrapper: {
-    width: 170,
-  },
-  recommendedCard: {
-    overflow: "hidden",
-  },
-  recommendedImageContainer: {
-    position: "relative",
-    marginBottom: Spacing.md,
-  },
-  recommendedImage: {
-    width: "100%",
-    height: 170,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.background.lighter,
-  },
-  recommendedWishlist: {
-    position: "absolute",
-    top: Spacing.sm,
-    right: Spacing.sm,
-    width: 36,
-    height: 36,
-    borderRadius: BorderRadius.full,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  recommendedTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: Colors.text.primary,
-    marginBottom: Spacing.xs,
-    lineHeight: 16,
-  },
-  recommendedPrice: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.accent,
   },
   emptyState: {
     alignItems: "center",

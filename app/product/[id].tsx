@@ -28,6 +28,8 @@ export default function ProductDetails() {
   const [addingToCart, setAddingToCart] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [unitOptions, setUnitOptions] = useState<any[]>([]);
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const isInCart = useMemo(() => {
@@ -36,6 +38,7 @@ export default function ProductDetails() {
 
   useEffect(() => {
     loadProduct();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const loadProduct = async () => {
@@ -48,10 +51,21 @@ export default function ProductDetails() {
         if (data.images && data.images.length > 0) {
           setSelectedImage(data.images[0]);
         }
+        // Initialize unit options for grocery items
+        const baseUnit = data.unit || "kg";
+        const options = getUnitOptions(data.price, baseUnit);
+        setUnitOptions(options);
+        // Set first unit option as default
+        if (options.length > 0) {
+          setSelectedUnit(options[0].display);
+        }
       } else {
         setError("Product not found.");
       }
-    } catch (err) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _
+    ) {
       setError("Failed to load product details.");
     } finally {
       setLoading(false);
@@ -78,10 +92,24 @@ export default function ProductDetails() {
     if (!product) return;
     try {
       setAddingToCart(true);
-      await addToCart(product, quantity);
-      Alert.alert("Success", "Added to your cart!");
+      // Add unit information to the product
+      const itemToAdd = {
+        ...product,
+        selectedUnit: selectedUnit,
+        selectedValue: selectedValue,
+        selectedUnitType: selectedUnitType,
+        unitPrice: unitPrice,
+      };
+      await addToCart(itemToAdd, quantity);
+      Alert.alert(
+        "Success",
+        `Added ${quantity}x ${selectedUnit} to your cart!`,
+      );
       setQuantity(1);
-    } catch (err) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      _
+    ) {
       Alert.alert("Error", "Failed to add item to cart");
     } finally {
       setAddingToCart(false);
@@ -117,7 +145,24 @@ export default function ProductDetails() {
   }
 
   const categoryName = product.category?.name || "Unknown";
-  const totalPrice = (product.price * quantity).toFixed(2);
+  const baseUnit = product.unit || "kg";
+
+  // Find the selected unit option to get its value
+  const selectedUnitOption = unitOptions.find(
+    (opt) => opt.display === selectedUnit,
+  );
+  const selectedValue = selectedUnitOption?.value || 1;
+  const selectedUnitType = selectedUnitOption?.unit || baseUnit;
+
+  // Calculate dynamic price based on selected unit and quantity
+  const unitPrice = calculatePrice(
+    product.price,
+    baseUnit,
+    selectedValue,
+    selectedUnitType,
+    1,
+  );
+  const totalPrice = (unitPrice * quantity).toFixed(2);
   const productImages = product.images || [];
 
   return (
@@ -194,9 +239,51 @@ export default function ProductDetails() {
           </View>
 
           <Text style={styles.title}>{product.title}</Text>
-          <Text style={styles.price}>
-            ৳{parseFloat(product.price || 0).toLocaleString()}
-          </Text>
+          <View style={styles.priceContainer}>
+            <Text style={styles.price}>৳{unitPrice.toFixed(0)}</Text>
+            <Text style={styles.unitLabel}>per {selectedUnitType}</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          {/* Unit Selection for Grocery Items */}
+          {unitOptions.length > 1 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Select Unit Size</Text>
+              <View style={styles.unitGrid}>
+                {unitOptions.map((option, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    style={[
+                      styles.unitButton,
+                      selectedUnit === option.display &&
+                        styles.unitButtonSelected,
+                    ]}
+                    onPress={() => setSelectedUnit(option.display)}
+                  >
+                    <Text
+                      style={[
+                        styles.unitButtonText,
+                        selectedUnit === option.display &&
+                          styles.unitButtonTextSelected,
+                      ]}
+                    >
+                      {option.display}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.unitPriceText,
+                        selectedUnit === option.display &&
+                          styles.unitPriceTextSelected,
+                      ]}
+                    >
+                      ৳{option.price.toFixed(0)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
 
           <View style={styles.divider} />
 
@@ -406,11 +493,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 32,
   },
+  priceContainer: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 8,
+    marginBottom: 16,
+  },
   price: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#2563EB",
-    marginBottom: 16,
+    color: "#10B981",
+    marginBottom: 0,
+  },
+  unitLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
   },
   divider: {
     height: 1,
@@ -452,6 +550,44 @@ const styles = StyleSheet.create({
     color: "#111827",
     flex: 1,
     textAlign: "center",
+  },
+  unitGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  unitButton: {
+    flex: 1,
+    minWidth: "48%",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  unitButtonSelected: {
+    backgroundColor: "#D1FAE5",
+    borderColor: "#10B981",
+  },
+  unitButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#374151",
+  },
+  unitButtonTextSelected: {
+    color: "#10B981",
+  },
+  unitPriceText: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginTop: 4,
+  },
+  unitPriceTextSelected: {
+    color: "#059669",
+    fontWeight: "600",
   },
   descriptionText: {
     fontSize: 15,
