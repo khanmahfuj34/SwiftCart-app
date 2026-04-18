@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
     FlatList,
@@ -11,6 +13,7 @@ import {
 import { useCart } from "../src/context/CartContext";
 
 export default function CartScreen() {
+  const router = useRouter();
   const {
     cartItems,
     increaseQuantity,
@@ -22,60 +25,63 @@ export default function CartScreen() {
   const renderCartItem = ({ item }: { item: any }) => {
     const imageUrl = item.images?.[0] || item.image;
     return (
-    <View style={styles.cartItem}>
-      {/* Product Image */}
-      {imageUrl && (
-        <Image
-          source={{ uri: imageUrl }}
-          style={styles.productImage}
-          resizeMode="cover"
-        />
-      )}
+      <View style={styles.cartItem}>
+        {/* Product Image */}
+        {imageUrl && (
+          <Image
+            source={{ uri: imageUrl }}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+        )}
 
-      {/* Product Details */}
-      <View style={styles.itemDetails}>
-        <Text style={styles.productTitle} numberOfLines={2}>
-          {item.title}
-        </Text>
-        <Text style={styles.productPrice}>
-          ${typeof item.price === "number" ? item.price.toFixed(2) : item.price}
-        </Text>
-      </View>
+        {/* Product Details */}
+        <View style={styles.itemDetails}>
+          <Text style={styles.productTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <Text style={styles.productPrice}>
+            $
+            {typeof item.price === "number"
+              ? item.price.toFixed(2)
+              : item.price}
+          </Text>
+        </View>
 
-      {/* Quantity Controls */}
-      <View style={styles.quantityContainer}>
+        {/* Quantity Controls */}
+        <View style={styles.quantityContainer}>
+          <TouchableOpacity
+            style={styles.quantityButton}
+            onPress={() => decreaseQuantity(item.id)}
+          >
+            <Text style={styles.buttonText}>−</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.quantityText}>{item.quantity}</Text>
+
+          <TouchableOpacity
+            style={styles.quantityButton}
+            onPress={() => increaseQuantity(item.id)}
+          >
+            <Text style={styles.buttonText}>+</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Item Total */}
+        <View style={styles.itemTotal}>
+          <Text style={styles.totalText}>
+            ${(item.price * item.quantity).toFixed(2)}
+          </Text>
+        </View>
+
+        {/* Remove Button */}
         <TouchableOpacity
-          style={styles.quantityButton}
-          onPress={() => decreaseQuantity(item.id)}
+          style={styles.removeButton}
+          onPress={() => removeFromCart(item.id)}
         >
-          <Text style={styles.buttonText}>−</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.quantityText}>{item.quantity}</Text>
-
-        <TouchableOpacity
-          style={styles.quantityButton}
-          onPress={() => increaseQuantity(item.id)}
-        >
-          <Text style={styles.buttonText}>+</Text>
+          <Text style={styles.removeButtonText}>✕</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Item Total */}
-      <View style={styles.itemTotal}>
-        <Text style={styles.totalText}>
-          ${(item.price * item.quantity).toFixed(2)}
-        </Text>
-      </View>
-
-      {/* Remove Button */}
-      <TouchableOpacity
-        style={styles.removeButton}
-        onPress={() => removeFromCart(item.id)}
-      >
-        <Text style={styles.removeButtonText}>✕</Text>
-      </TouchableOpacity>
-    </View>
     );
   };
 
@@ -125,7 +131,11 @@ export default function CartScreen() {
           </View>
 
           {/* Checkout Button */}
-          <TouchableOpacity style={styles.checkoutButton}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={() => router.push("/checkout/address")}
+          >
+            <Ionicons name="bag-check" size={18} color="#FFFFFF" />
             <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
           </TouchableOpacity>
         </View>
@@ -301,10 +311,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 16,
     alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
   },
   checkoutButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
   },
 });

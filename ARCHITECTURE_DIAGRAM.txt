@@ -1,0 +1,457 @@
+# SwiftCart Side Drawer Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    SWIFTCART APP NAVIGATION FLOW                    │
+└─────────────────────────────────────────────────────────────────────┘
+
+                              ┌──────────────────┐
+                              │   Home Screen    │
+                              │ (tabs/index.tsx) │
+                              └────────┬─────────┘
+                                       │
+                         ┌─────────────┴─────────────┐
+                         │                           │
+                    [Menu Button]          [Cart/Notifications]
+                         │                           │
+                         ▼                           ▼
+                    ┌──────────────────┐    ┌──────────────────┐
+                    │  SIDE DRAWER     │    │  Other Features  │
+                    │  (Animated in)   │    │                  │
+                    └────────┬─────────┘    └──────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
+    ┌─────────┐        ┌─────────┐        ┌─────────┐
+    │ User    │        │ Menu    │        │ Bottom  │
+    │ Profile │        │ Items   │        │ Actions │
+    │ Header  │        │ (4 Sec) │        │         │
+    └─────────┘        └─────────┘        └─────────┘
+         │
+    ┌────┴────┐
+    │          │
+Avatar      User Info
+(Icon)   (Name/Email)
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                    DRAWER MENU SECTIONS (4)                          │
+└──────────────────────────────────────────────────────────────────────┘
+
+    👤 ACCOUNT                      🛍️ SHOPPING
+    ├─ Profile                      ├─ Home
+    ├─ Edit Profile                 ├─ Categories  
+    ├─ My Orders                    ├─ New Arrivals
+    ├─ Wishlist [badge]             ├─ Trending Products
+    └─ Saved Addresses              ├─ Flash Sale
+                                    └─ Cart [badge]
+
+    💳 SERVICES                     ⚙️ SETTINGS
+    ├─ Track Order                  ├─ Dark Mode [Toggle]
+    ├─ Payment Methods              ├─ Language
+    ├─ Coupons / Promos             ├─ Privacy Policy
+    └─ Notifications [badge]        ├─ Help & Support
+                                    └─ About SwiftCart
+
+    🚪 LOGOUT (Bottom Section)
+    └─ Clear Session → Login Screen
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                  COMPONENT HIERARCHY                                 │
+└──────────────────────────────────────────────────────────────────────┘
+
+App (_layout.tsx)
+│
+├─ AuthProvider
+├─ UserProvider
+├─ CartProvider
+├─ WishlistProvider
+├─ OrdersProvider
+├─ CheckoutProvider
+└─ ToastProvider
+   │
+   └─ RootLayoutNav
+      │
+      ├─ TabsLayout
+      │  └─ HomeScreen (tabs/index.tsx)
+      │     └─ SideDrawer Component ⭐
+      │        ├─ DecorativeDots
+      │        ├─ User Profile Section
+      │        ├─ Menu Sections
+      │        │  └─ Menu Items
+      │        └─ Logout Button
+      │
+      ├─ Profile
+      ├─ Wishlist
+      ├─ Orders
+      ├─ Cart
+      ├─ Coupons ✨ NEW
+      ├─ Language ✨ NEW
+      ├─ Notifications
+      ├─ Payment
+      ├─ Privacy
+      ├─ Help
+      └─ About
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                  DATA FLOW ARCHITECTURE                              │
+└──────────────────────────────────────────────────────────────────────┘
+
+                         ┌────────────────┐
+                         │  Auth Context  │
+                         │                │
+                         │ - user (uid)   │
+                         │ - logout()     │
+                         │ - loading      │
+                         └────────┬───────┘
+                                  │
+                    ┌─────────────┼─────────────┐
+                    │             │             │
+                    ▼             ▼             ▼
+            ┌────────────┐ ┌────────────┐ ┌────────────┐
+            │   User     │ │   Cart     │ │ Wishlist   │
+            │  Context   │ │  Context   │ │  Context   │
+            │            │ │            │ │            │
+            │- profile   │ │- items     │ │- items     │
+            │- addresses │ │- add/remove│ │- add/remove│
+            └──────┬─────┘ └──────┬─────┘ └──────┬─────┘
+                   │             │             │
+                   └─────────────┬─────────────┘
+                                 │
+                        ┌────────▼────────┐
+                        │  SideDrawer     │
+                        │                 │
+                        │ Receives:       │
+                        │ - userName      │
+                        │ - userEmail     │
+                        │ - badge counts  │
+                        │ - navigation    │
+                        └─────────────────┘
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│               ANIMATION & STATE MANAGEMENT                           │
+└──────────────────────────────────────────────────────────────────────┘
+
+User Action → State Update → Animation → Navigation → Auto-Close
+
+[Menu Tap]
+    │
+    ▼
+setDrawerVisible(true)
+    │
+    ▼
+Animated.timing(
+  slideAnim: -300 → 0,
+  duration: 300ms
+)
+    │
+    ▼
+Drawer visible with overlay
+    │
+    ▼
+[Item Click] → router.push(route)
+    │
+    ▼
+Navigation completes
+    │
+    ▼
+onClose() → setDrawerVisible(false)
+    │
+    ▼
+Animated.timing(
+  slideAnim: 0 → -300,
+  duration: 300ms
+)
+    │
+    ▼
+Drawer hidden
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                  FIRESTORE COLLECTIONS STRUCTURE                     │
+└──────────────────────────────────────────────────────────────────────┘
+
+users/
+├─ {uid}
+│  ├─ name: string
+│  ├─ email: string
+│  ├─ photoURL: string
+│  ├─ addresses: Address[]
+│  └─ timestamps
+
+coupons/ ✨ NEW
+├─ {couponId}
+│  ├─ code: string
+│  ├─ discount: number
+│  ├─ type: 'percentage' | 'fixed'
+│  ├─ minPurchase: number
+│  ├─ expiryDate: string
+│  ├─ description: string
+│  └─ used: boolean
+
+orders/
+├─ {uid}/items/
+│  └─ {orderId}
+│     ├─ items: OrderItem[]
+│     ├─ status: string
+│     ├─ total: number
+│     └─ timestamps
+
+wishlist/
+├─ {uid}/items/
+│  └─ {productId}
+│     ├─ productId: string
+│     └─ addedAt: timestamp
+
+notifications/
+├─ {uid}/items/
+│  └─ {notificationId}
+│     ├─ title: string
+│     ├─ message: string
+│     ├─ type: string
+│     ├─ read: boolean
+│     └─ timestamps
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                    RENDERING FLOW                                    │
+└──────────────────────────────────────────────────────────────────────┘
+
+SideDrawer (Main Container)
+│
+├─ Overlay (TouchableOpacity)
+│  └─ onPress → onClose()
+│
+└─ Animated.View (slideAnim)
+   │
+   ├─ SafeAreaView
+   │  │
+   │  ├─ ScrollView
+   │  │  │
+   │  │  ├─ Close Button
+   │  │  │
+   │  │  ├─ Profile Header
+   │  │  │  ├─ Avatar
+   │  │  │  └─ User Info
+   │  │  │
+   │  │  └─ Menu Sections (forEach)
+   │  │     └─ Menu Items (forEach)
+   │  │        ├─ Icon
+   │  │        ├─ Label
+   │  │        └─ Badge (conditional)
+   │  │
+   │  └─ Logout Button (Bottom)
+   │     └─ handleLogout()
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                    LOGOUT FLOW                                       │
+└──────────────────────────────────────────────────────────────────────┘
+
+[Logout Button Pressed]
+         │
+         ▼
+   handleLogout()
+         │
+         ├─ try block
+         │  ├─ logout() from AuthContext
+         │  │  └─ signOut(Firebase)
+         │  │
+         │  ├─ router.replace('/login')
+         │  │  └─ Clear navigation stack
+         │  │
+         │  └─ onClose()
+         │     └─ Close drawer
+         │
+         ├─ catch block
+         │  └─ console.error()
+         │
+         ▼
+   User redirected to /login
+   Session cleared
+   Drawer hidden
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                  FILE DEPENDENCIES                                   │
+└──────────────────────────────────────────────────────────────────────┘
+
+SideDrawer.tsx
+├─ Imports
+│  ├─ react
+│  ├─ react-native
+│  ├─ expo-icons
+│  ├─ expo-router
+│  ├─ AuthContext.js
+│  ├─ useColorScheme
+│  └─ theme constants
+│
+├─ Uses
+│  ├─ Animated API
+│  ├─ Firebase Auth
+│  ├─ Navigation Stack
+│  └─ Dark mode
+│
+└─ Used by
+   ├─ (tabs)/index.tsx
+   └─ Other screens (can import)
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                    KEY FILES OVERVIEW                                │
+└──────────────────────────────────────────────────────────────────────┘
+
+src/components/SideDrawer.tsx (280 lines)
+├─ Main drawer component
+├─ DecorativeDots sub-component
+├─ Menu section rendering
+├─ Animation logic
+└─ Dark mode support
+
+app/coupons.tsx (200+ lines)
+├─ Coupons list display
+├─ Firestore integration
+├─ Apply coupon logic
+└─ Empty/loading states
+
+app/language.tsx (180+ lines)
+├─ Language selection
+├─ 12 languages
+├─ Selection persistence
+└─ Dark mode support
+
+app/(tabs)/index.tsx (UPDATED)
+├─ Drawer integration
+├─ Menu button handler
+├─ User data passing
+└─ Navigation logic
+
+src/types/drawer.types.ts (500+ lines)
+├─ Type definitions
+├─ Interface exports
+├─ JSDoc comments
+└─ Full TypeScript support
+
+
+─────────────────────────────────────────────────────────────────────
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                  RESPONSIVE DESIGN STRATEGY                          │
+└──────────────────────────────────────────────────────────────────────┘
+
+Fixed Drawer Width: 300px
+├─ Works on small phones (320px)
+├─ Works on tablets (768px+)
+└─ Overlay handles remaining space
+
+Safe Area Handling
+├─ Top: iPhone notch
+├─ Bottom: Home indicator
+└─ Sides: Always 0
+
+Touch Targets
+├─ Menu items: 44px+ height
+├─ Buttons: 44x44 minimum
+└─ Scrollable content: Comfortable spacing
+
+Responsive Content
+├─ Scroll for overflow
+├─ Flexible text sizing
+├─ Icon sizing adjustable
+└─ Badge positioning fixed
+
+
+═════════════════════════════════════════════════════════════════════════
+
+                        ✨ PRODUCTION READY ✨
+
+═════════════════════════════════════════════════════════════════════════
+```
+
+---
+
+## Color Scheme
+
+```
+LIGHT MODE:
+├─ Background: #FFFFFF (White)
+├─ Text Primary: #0F172A (Navy)
+├─ Text Secondary: #6B7280 (Gray)
+├─ Active Background: #F3F4F6 (Light Gray)
+├─ Badge: #EF4444 (Red)
+├─ Icons: #6B7280 (Gray) → Active: #0F172A
+└─ Overlay: rgba(0, 0, 0, 0.5)
+
+DARK MODE:
+├─ Background: #1A1A1A (Dark Gray)
+├─ Text Primary: #FFFFFF (White)
+├─ Text Secondary: #AAAAAA (Medium Gray)
+├─ Active Background: #2A2A2A (Lighter Gray)
+├─ Badge: #EF4444 (Red) - Same
+├─ Icons: #888888 → Active: #FFFFFF
+└─ Overlay: rgba(0, 0, 0, 0.7)
+```
+
+---
+
+## Animation Timings
+
+```
+Drawer Open:
+├─ Duration: 300ms
+├─ Easing: Linear
+├─ Transform: translateX(-300 → 0)
+└─ useNativeDriver: true
+
+Drawer Close:
+├─ Duration: 300ms
+├─ Easing: Linear
+├─ Transform: translateX(0 → -300)
+└─ useNativeDriver: true
+
+Menu Item Highlight:
+├─ Duration: Instant
+├─ Background change
+└─ Active state applied
+
+Navigation:
+├─ Duration: 100-200ms
+├─ Depends on screen load
+└─ Auto-close on complete
+```
+
+---
+
+✅ **End of Architecture Documentation**

@@ -1,0 +1,8 @@
+{
+  "storage": [
+    {
+      "bucket": "swiftcart-app-68c3b.firebasestorage.app",
+      "rules": "storage.rules"
+    }
+  ]
+}
