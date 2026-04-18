@@ -10,9 +10,11 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCart } from "../src/context/CartContext";
 
 export default function CartScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const {
     cartItems,
@@ -93,7 +95,7 @@ export default function CartScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Shopping Cart</Text>

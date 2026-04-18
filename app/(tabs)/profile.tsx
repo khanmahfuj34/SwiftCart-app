@@ -2,21 +2,23 @@
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../src/context/AuthContext";
 import { useOrders } from "../../src/context/OrdersContext";
 import { useUser } from "../../src/context/UserContext";
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, logout, loading: authLoading } = useAuth();
   const { profile, loading: userLoading } = useUser();
   const { orders } = useOrders();
@@ -30,7 +32,9 @@ export default function ProfileScreen() {
 
   if (authLoading || userLoading || !user) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
+      <SafeAreaView
+        style={[styles.loadingContainer, { paddingTop: insets.top }]}
+      >
         <ActivityIndicator size="large" color="#1A1A1A" />
       </SafeAreaView>
     );
@@ -85,7 +89,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

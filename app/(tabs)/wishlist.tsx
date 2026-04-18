@@ -13,12 +13,14 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCart } from "../../src/context/CartContext";
 import { useWishlist } from "../../src/context/WishlistContext";
 
 const { height } = Dimensions.get("window");
 
 export default function WishlistScreen() {
+  const insets = useSafeAreaInsets();
   const { wishlistItems, toggleWishlist } = useWishlist();
   const { addToCart } = useCart();
   const router = useRouter();
@@ -96,7 +98,7 @@ export default function WishlistScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Wishlist</Text>
       </View>

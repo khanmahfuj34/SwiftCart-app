@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BorderRadius, Colors, Shadows, Spacing } from "../../constants/theme";
 import CategoryList from "../../src/components/CategoryList";
@@ -28,6 +29,7 @@ const { width } = Dimensions.get("window");
 const CARD_WIDTH = (width - Spacing.xl * 2 - Spacing.lg) / 2;
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { products, categories, loading: productsLoading } = useProducts();
   const { cartItems, addToCart } = useCart();
@@ -172,9 +174,9 @@ export default function HomeScreen() {
         onClose={() => setDrawerVisible(false)}
       />
 
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { paddingTop: insets.top }]}>
         {/* Premium Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { marginTop: Spacing.sm }]}>
           <TouchableOpacity
             style={styles.menuButton}
             onPress={() => setDrawerVisible(true)}

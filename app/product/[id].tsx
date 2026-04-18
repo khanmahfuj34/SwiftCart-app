@@ -2,21 +2,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCart } from "../../src/context/CartContext";
 import { productAPI } from "../../src/services/api";
 
 export default function ProductDetails() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { addToCart, cartItems } = useCart();
@@ -88,7 +90,9 @@ export default function ProductDetails() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView
+        style={[styles.centerContainer, { paddingTop: insets.top }]}
+      >
         <ActivityIndicator size="large" color="#2563EB" />
         <Text style={styles.loadingText}>Loading details...</Text>
       </SafeAreaView>
@@ -97,7 +101,9 @@ export default function ProductDetails() {
 
   if (error || !product) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView
+        style={[styles.centerContainer, { paddingTop: insets.top }]}
+      >
         <Ionicons name="alert-circle-outline" size={60} color="#EF4444" />
         <Text style={styles.errorText}>{error || "Product not found"}</Text>
         <TouchableOpacity
@@ -115,7 +121,7 @@ export default function ProductDetails() {
   const productImages = product.images || [];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.headerIconButton}
@@ -230,11 +236,19 @@ export default function ProductDetails() {
 
           <View style={styles.featuresContainer}>
             <View style={styles.featureItem}>
-              <Ionicons name="refresh-circle-outline" size={20} color="#10B981" />
+              <Ionicons
+                name="refresh-circle-outline"
+                size={20}
+                color="#10B981"
+              />
               <Text style={styles.featureText}>7 Days Return</Text>
             </View>
             <View style={styles.featureItem}>
-              <Ionicons name="shield-checkmark-outline" size={20} color="#10B981" />
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={20}
+                color="#10B981"
+              />
               <Text style={styles.featureText}>Genuine Product</Text>
             </View>
           </View>
@@ -253,7 +267,7 @@ export default function ProductDetails() {
           style={[
             styles.addToCartButton,
             addingToCart && styles.addToCartButtonLoading,
-            isInCart && styles.alreadyInCartButton
+            isInCart && styles.alreadyInCartButton,
           ]}
           onPress={handleAddToCart}
           disabled={addingToCart}
@@ -262,7 +276,11 @@ export default function ProductDetails() {
             <ActivityIndicator size="small" color="#FFF" />
           ) : (
             <>
-              <Ionicons name={isInCart ? "add-circle" : "cart"} size={22} color="#FFF" />
+              <Ionicons
+                name={isInCart ? "add-circle" : "cart"}
+                size={22}
+                color="#FFF"
+              />
               <Text style={styles.addToCartText}>
                 {isInCart ? "Add More" : "Add to Cart"}
               </Text>
@@ -313,7 +331,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
   },
-  headerIconButton: { padding: 8, borderRadius: 12, backgroundColor: "#F9FAFB" },
+  headerIconButton: {
+    padding: 8,
+    borderRadius: 12,
+    backgroundColor: "#F9FAFB",
+  },
   headerTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
   cartBadge: {
     position: "absolute",
