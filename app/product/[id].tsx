@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCart } from "../../src/context/CartContext";
 import { productAPI } from "../../src/services/api";
+import { calculatePrice, getUnitOptions } from "../../src/utils/unitSystem";
 
 export default function ProductDetails() {
   const insets = useSafeAreaInsets();
@@ -45,28 +46,56 @@ export default function ProductDetails() {
     try {
       setLoading(true);
       setError(null);
-      const data = await productAPI.getProductById(id);
-      if (data) {
+
+      // Ensure ID is defined
+      if (!id) {
+        setError("No product ID provided.");
+        setLoading(false);
+        return;
+      }
+
+      const numId = typeof id === "string" ? parseInt(id, 10) : id;
+
+      if (isNaN(numId)) {
+        setError("Invalid product ID.");
+        setLoading(false);
+        return;
+      }
+
+      // Try direct API first
+      let data = await productAPI.getProductById(numId);
+
+      // If direct API fails, fetch all and filter
+      if (!data || Object.keys(data).length === 0) {
+        console.log("Direct API failed, fetching all products...");
+        const allProducts = await productAPI.getAllProducts();
+        data = allProducts.find((p) => p.id === numId);
+      }
+
+      if (data && Object.keys(data).length > 0) {
         setProduct(data);
-        if (data.images && data.images.length > 0) {
-          setSelectedImage(data.images[0]);
-        }
+        // Handle various image property names from API
+        const imageUrl =
+          data.images?.[0] ||
+          data.image ||
+          data.thumbnail ||
+          "https://via.placeholder.com/400";
+        setSelectedImage(imageUrl);
+
         // Initialize unit options for grocery items
         const baseUnit = data.unit || "kg";
-        const options = getUnitOptions(data.price, baseUnit);
+        const options = getUnitOptions(data.price || 0, baseUnit);
         setUnitOptions(options);
         // Set first unit option as default
         if (options.length > 0) {
           setSelectedUnit(options[0].display);
         }
       } else {
-        setError("Product not found.");
+        setError("Product not found. Please try again.");
       }
-    } catch (
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      _
-    ) {
-      setError("Failed to load product details.");
+    } catch (err) {
+      console.error("Error loading product:", err);
+      setError("Failed to load product details. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -247,7 +276,7 @@ export default function ProductDetails() {
           <View style={styles.divider} />
 
           {/* Unit Selection for Grocery Items */}
-          {unitOptions.length > 1 && (
+          {unitOptions && unitOptions.length > 1 && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Select Unit Size</Text>
               <View style={styles.unitGrid}>
@@ -268,7 +297,7 @@ export default function ProductDetails() {
                           styles.unitButtonTextSelected,
                       ]}
                     >
-                      {option.display}
+                      {option.display || option.label}
                     </Text>
                     <Text
                       style={[
@@ -277,7 +306,7 @@ export default function ProductDetails() {
                           styles.unitPriceTextSelected,
                       ]}
                     >
-                      ৳{option.price.toFixed(0)}
+                      ৳{(option.price || 0).toFixed(0)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -449,7 +478,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     padding: 2,
   },
-  thumbnailSelected: { borderColor: "#2563EB" },
+  thumbnailSelected: { borderColor: "#10B981" },
   thumbnailImage: { width: 70, height: 70, borderRadius: 10 },
   infoContainer: {
     backgroundColor: "#FFF",
@@ -638,18 +667,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#2563EB",
+    backgroundColor: "#10B981",
     paddingVertical: 16,
     borderRadius: 16,
-    shadowColor: "#2563EB",
+    shadowColor: "#10B981",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
   alreadyInCartButton: {
-    backgroundColor: "#10B981",
-    shadowColor: "#10B981",
+    backgroundColor: "#059669",
+    shadowColor: "#059669",
   },
   addToCartButtonLoading: { opacity: 0.7 },
   addToCartText: {

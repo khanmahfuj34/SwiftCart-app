@@ -83,10 +83,10 @@ export const addUserAddress = async (userId, addressData) => {
       district: addressData.district || "",
       area: addressData.area || "",
       postalCode: addressData.postalCode || "",
-      addressLine: addressData.addressLine || "",
+      fullAddress: addressData.fullAddress || "",
       type: addressData.type || "Home", // Home, Office, Other
       isDefault: addressData.isDefault || false,
-      isDeleted: false,
+      deleted: false,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
@@ -128,7 +128,6 @@ export const deleteUserAddress = async (userId, addressId) => {
 
     await updateDoc(addressRef, {
       deleted: true,
-      deletedAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     });
   } catch (error) {

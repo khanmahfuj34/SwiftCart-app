@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
     ActivityIndicator,
+    Dimensions,
+    FlatList,
     Image,
     SafeAreaView,
     ScrollView,
@@ -19,13 +21,18 @@ import CategoryList from "../../src/components/CategoryList";
 import GroceryProductCard from "../../src/components/GroceryProductCard";
 import SearchBar from "../../src/components/SearchBar";
 import SideDrawer from "../../src/components/SideDrawer";
+import { useCart } from "../../src/context/CartContext";
 import { useDrawer } from "../../src/context/DrawerContext";
 import { useProducts } from "../../src/hooks/useProducts";
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = (width - Spacing.lg * 2 - Spacing.md) / 2;
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { products, categories, loading: productsLoading } = useProducts();
+  const { cartItems } = useCart();
   const { drawerVisible, setDrawerVisible } = useDrawer();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +40,7 @@ export default function HomeScreen() {
 
   const totalItems = useMemo(
     () => cartItems.reduce((total, item) => total + (item.quantity || 1), 0),
-    [],
+    [cartItems],
   );
 
   // Optimized product filtering
@@ -54,13 +61,15 @@ export default function HomeScreen() {
   const trendingProducts = filteredProducts.slice(3, 12);
   const allProducts = filteredProducts; // Show all filtered products
 
-  const renderProductCard = (product) => {
+  const renderProductCard = useCallback((product) => {
     return (
-      <View key={product.id} style={styles.productCardWrapper}>
+      <View style={styles.productCardWrapper}>
         <GroceryProductCard product={product} />
       </View>
     );
-  };
+  }, []);
+
+  const keyExtractor = useCallback((item) => `product-${item.id}`, []);
 
   return (
     <LinearGradient
@@ -186,11 +195,15 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.productGrid}>
-                {trendingProducts
-                  .slice(0, 4)
-                  .map((product) => renderProductCard(product))}
-              </View>
+              <FlatList
+                data={trendingProducts.slice(0, 4)}
+                renderItem={({ item }) => renderProductCard(item)}
+                keyExtractor={keyExtractor}
+                numColumns={2}
+                scrollEnabled={false}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.flatListContent}
+              />
             </View>
           )}
 
@@ -223,9 +236,15 @@ export default function HomeScreen() {
                 </Text>
               </View>
 
-              <View style={styles.productGrid}>
-                {allProducts.map((product) => renderProductCard(product))}
-              </View>
+              <FlatList
+                data={allProducts}
+                renderItem={({ item }) => renderProductCard(item)}
+                keyExtractor={keyExtractor}
+                numColumns={2}
+                scrollEnabled={false}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.flatListContent}
+              />
             </View>
           )}
 
@@ -404,12 +423,22 @@ const styles = StyleSheet.create({
     color: Colors.accent,
   },
   productCardWrapper: {
-    width: "100%",
-    marginBottom: Spacing.sm,
+    width: CARD_WIDTH,
+    marginBottom: Spacing.md,
+  },
+  columnWrapper: {
+    justifyContent: "space-between",
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  flatListContent: {
+    paddingHorizontal: 0,
   },
   productGrid: {
-    flexDirection: "column",
-    gap: Spacing.md,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: Spacing.lg,
   },
   promoBanner: {
     paddingHorizontal: Spacing.lg,

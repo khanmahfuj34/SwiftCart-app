@@ -94,13 +94,20 @@ export const subscribeToUserProfile = (userId, callback) => {
  */
 export const updateUserProfile = async (userId, updates) => {
   try {
+    // Validate userId
+    if (!userId || typeof userId !== "string") {
+      throw new Error("Valid user ID is required to update profile");
+    }
+
     const userRef = doc(db, "users", userId);
     const updateData = {
       ...updates,
       updatedAt: Timestamp.now(),
     };
 
-    await updateDoc(userRef, updateData);
+    // Use setDoc with merge: true to create or update document
+    // This prevents "No document to update" errors
+    await setDoc(userRef, updateData, { merge: true });
     return updateData;
   } catch (error) {
     console.error("Error updating user profile:", error);
@@ -113,10 +120,20 @@ export const updateUserProfile = async (userId, updates) => {
  */
 export const updateLastLogin = async (userId) => {
   try {
+    // Validate userId
+    if (!userId || typeof userId !== "string") {
+      throw new Error("Valid user ID is required to update last login");
+    }
+
     const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      lastLogin: Timestamp.now(),
-    });
+    // Use setDoc with merge: true instead of updateDoc
+    await setDoc(
+      userRef,
+      {
+        lastLogin: Timestamp.now(),
+      },
+      { merge: true },
+    );
   } catch (error) {
     console.error("Error updating last login:", error);
     throw error;

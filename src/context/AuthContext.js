@@ -1,4 +1,4 @@
-﻿import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { auth } from "../services/firebase";
 import { createUserProfile } from "../services/userService";
@@ -11,9 +11,12 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Track whether auth check has completed
+    let authCheckComplete = false;
+
     // Timeout for auth state check (max 10 seconds)
     const timeoutId = setTimeout(() => {
-      if (loading) {
+      if (!authCheckComplete) {
         console.warn(
           "Auth state check timed out after 10 seconds. Proceeding without auth.",
         );
@@ -23,6 +26,7 @@ export const AuthProvider = ({ children }) => {
 
     const unsubscribe = onAuthStateChanged(auth, (authUser) => {
       try {
+        authCheckComplete = true;
         clearTimeout(timeoutId);
         setError(null);
         if (authUser) {
@@ -142,7 +146,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{ user, login, signup, logout, loading, error }}
     >
-      {children}{" "}
+      {children}
     </AuthContext.Provider>
   );
 };

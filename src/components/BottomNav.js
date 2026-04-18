@@ -1,12 +1,12 @@
-﻿import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useRef } from "react";
 import {
-    Animated,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { BorderRadius, Colors, Shadows, Spacing } from "../../constants/theme";
 
@@ -21,41 +21,39 @@ const PremiumBottomNav = ({
 
   useEffect(() => {
     if (drawerVisible) {
-      // Hide bottom nav when drawer opens
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 120, // Slide down
+          toValue: 120,
           duration: 250,
           useNativeDriver: true,
         }),
         Animated.timing(opacityAnim, {
-          toValue: 0, // Fade out
+          toValue: 0,
           duration: 200,
           useNativeDriver: true,
         }),
       ]).start();
     } else {
-      // Show bottom nav when drawer closes
       Animated.parallel([
         Animated.timing(slideAnim, {
-          toValue: 0, // Slide up
+          toValue: 0,
           duration: 250,
           useNativeDriver: true,
         }),
         Animated.timing(opacityAnim, {
-          toValue: 1, // Fade in
+          toValue: 1,
           duration: 250,
           useNativeDriver: true,
         }),
       ]).start();
     }
-  }, [drawerVisible]);
+  }, [drawerVisible, slideAnim, opacityAnim]);
 
   const tabs = [
     {
       name: "index",
       label: "Home",
-      icon: "home",
+      icon: "home-outline",
       iconFilled: "home",
     },
     {
@@ -67,8 +65,8 @@ const PremiumBottomNav = ({
     {
       name: "profile",
       label: "Profile",
-      icon: "person-outline",
-      iconFilled: "person",
+      icon: "person-circle-outline",
+      iconFilled: "person-circle",
     },
   ];
 
@@ -84,6 +82,7 @@ const PremiumBottomNav = ({
       pointerEvents={drawerVisible ? "none" : "auto"}
     >
       <View style={styles.tabBar}>
+        
         {tabs.map((tab, index) => {
           const isFocused = state.index === index;
           const route = state.routes[index];
@@ -105,12 +104,13 @@ const PremiumBottomNav = ({
               key={tab.name}
               onPress={onPress}
               style={[styles.tab, isFocused && styles.tabFocused]}
+              activeOpacity={0.7}
             >
               <View style={styles.tabContent}>
                 <Ionicons
                   name={isFocused ? tab.iconFilled : tab.icon}
-                  size={24}
-                  color={isFocused ? Colors.accent : Colors.muted}
+                  size={26}
+                  color={isFocused ? Colors.primary : "#9CA3AF"}
                 />
                 <Text
                   style={[styles.tabLabel, isFocused && styles.tabLabelFocused]}
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: "row",
-    backgroundColor: Colors.secondary,
+    backgroundColor: "#1F2937",
     borderRadius: BorderRadius["2xl"],
     justifyContent: "space-around",
     alignItems: "center",
@@ -147,14 +147,14 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    height: 56,
+    height: 60,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: BorderRadius.xl,
+    borderRadius: BorderRadius.lg,
     position: "relative",
   },
   tabFocused: {
-    backgroundColor: Colors.primary,
+    backgroundColor: "rgba(16, 185, 129, 0.15)",
   },
   tabContent: {
     justifyContent: "center",
@@ -162,22 +162,29 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   tabLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "600",
-    color: Colors.muted,
+    color: "#9CA3AF",
     marginTop: Spacing.xs,
+    letterSpacing: 0.3,
   },
   tabLabelFocused: {
-    color: Colors.accent,
+    color: Colors.primary,
     fontWeight: "700",
+    fontSize: 11,
   },
   activeIndicator: {
     position: "absolute",
-    bottom: 4,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.accent,
+    bottom: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });
 

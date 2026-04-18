@@ -13,8 +13,10 @@ export interface ProductUnit {
 
 export interface UnitOption {
   label: string;
+  display: string;
   value: number;
   unit: Unit;
+  price: number;
 }
 
 /**
@@ -24,27 +26,77 @@ export const getUnitOptions = (
   basePrice: number,
   baseUnit: Unit,
 ): UnitOption[] => {
+  const price = basePrice || 0;
+
   if (baseUnit === "kg") {
     return [
-      { label: "1 kg", value: 1000, unit: "g" },
-      { label: "500 g", value: 500, unit: "g" },
-      { label: "250 g", value: 250, unit: "g" },
-      { label: "100 g", value: 100, unit: "g" },
+      { label: "1 kg", display: "1 kg", value: 1000, unit: "g", price: price },
+      {
+        label: "500 g",
+        display: "500 g",
+        value: 500,
+        unit: "g",
+        price: price * 0.5,
+      },
+      {
+        label: "250 g",
+        display: "250 g",
+        value: 250,
+        unit: "g",
+        price: price * 0.25,
+      },
+      {
+        label: "100 g",
+        display: "100 g",
+        value: 100,
+        unit: "g",
+        price: price * 0.1,
+      },
     ];
   }
 
   if (baseUnit === "liter") {
     return [
-      { label: "1 L", value: 1, unit: "liter" },
-      { label: "500 ml", value: 500, unit: "ml" },
-      { label: "250 ml", value: 250, unit: "ml" },
+      { label: "1 L", display: "1 L", value: 1, unit: "liter", price: price },
+      {
+        label: "500 ml",
+        display: "500 ml",
+        value: 500,
+        unit: "ml",
+        price: price * 0.5,
+      },
+      {
+        label: "250 ml",
+        display: "250 ml",
+        value: 250,
+        unit: "ml",
+        price: price * 0.25,
+      },
     ];
   }
 
   return [
-    { label: "1 piece", value: 1, unit: "piece" },
-    { label: "2 pieces", value: 2, unit: "piece" },
-    { label: "5 pieces", value: 5, unit: "piece" },
+    {
+      label: "1 piece",
+      display: "1 pc",
+      value: 1,
+      unit: "piece",
+      price: price,
+    },
+    {
+      label: "2 pieces",
+      display: "2 pcs",
+      value: 2,
+      unit: "piece",
+      price: price * 2,
+    },
+    {
+      label: "5 pieces",
+      display: "5 pcs",
+      value: 5,
+      unit: "piece",
+      price: price * 5,
+    },
   ];
 };
 
