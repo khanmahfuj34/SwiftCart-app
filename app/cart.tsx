@@ -42,11 +42,19 @@ export default function CartScreen() {
           <Text style={styles.productTitle} numberOfLines={2}>
             {item.title}
           </Text>
+          {/* Show unit info if available (grocery item) */}
+          {item.selectedUnit && (
+            <Text style={styles.unitInfo}>
+              {item.selectedUnit}
+              {item.selectedUnitType &&
+                ` • ৳${item.unitPrice?.toFixed(0) || item.price.toFixed(0)}/${item.selectedUnitType}`}
+            </Text>
+          )}
           <Text style={styles.productPrice}>
-            $
+            ৳
             {typeof item.price === "number"
-              ? item.price.toFixed(2)
-              : item.price}
+              ? item.price.toFixed(0)
+              : parseFloat(item.price).toFixed(0)}
           </Text>
         </View>
 
@@ -72,7 +80,11 @@ export default function CartScreen() {
         {/* Item Total */}
         <View style={styles.itemTotal}>
           <Text style={styles.totalText}>
-            ${(item.price * item.quantity).toFixed(2)}
+            ৳
+            {(item.unitPrice
+              ? item.unitPrice * item.quantity
+              : item.price * item.quantity
+            ).toFixed(0)}
           </Text>
         </View>
 
@@ -116,19 +128,19 @@ export default function CartScreen() {
         <View style={styles.totalContainer}>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Subtotal:</Text>
-            <Text style={styles.totalValue}>${getTotalPrice().toFixed(2)}</Text>
+            <Text style={styles.totalValue}>৳{getTotalPrice().toFixed(0)}</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Tax:</Text>
+            <Text style={styles.totalLabel}>Tax (10%):</Text>
             <Text style={styles.totalValue}>
-              ${(getTotalPrice() * 0.1).toFixed(2)}
+              ৳{(getTotalPrice() * 0.1).toFixed(0)}
             </Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.totalRow}>
             <Text style={styles.grandTotalLabel}>Grand Total:</Text>
             <Text style={styles.grandTotalValue}>
-              ${(getTotalPrice() * 1.1).toFixed(2)}
+              ৳{(getTotalPrice() * 1.1).toFixed(0)}
             </Text>
           </View>
 
@@ -200,7 +212,13 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#2ecc71",
+    color: "#10B981",
+  },
+  unitInfo: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginBottom: 4,
+    fontWeight: "500",
   },
   quantityContainer: {
     flexDirection: "row",

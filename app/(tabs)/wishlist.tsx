@@ -230,10 +230,10 @@ const styles = StyleSheet.create({
   image: { width: "100%", height: "100%" },
   info: { flex: 1, marginLeft: 16 },
   title: { fontSize: 14, fontWeight: "600", color: "#1A1A1A", marginBottom: 4 },
-  price: { fontSize: 16, fontWeight: "700", color: "#1A1A1A", marginBottom: 8 },
+  price: { fontSize: 16, fontWeight: "700", color: "#10B981", marginBottom: 8 },
   addToCartBtn: {
     flexDirection: "row",
-    backgroundColor: "#1A1A1A",
+    backgroundColor: "#10B981",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
