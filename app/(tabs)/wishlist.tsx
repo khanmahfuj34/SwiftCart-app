@@ -2,16 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  FlatList,
-  Image,
-  Modal,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    FlatList,
+    Image,
+    Modal,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { useCart } from "../../src/context/CartContext";
 import { useWishlist } from "../../src/context/WishlistContext";
@@ -26,17 +26,10 @@ export default function WishlistScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState("Black");
-
-  const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
-  const colors = ["Black", "White", "Navy", "Gray", "Beige"];
 
   const openModal = (item) => {
     setSelectedItem(item);
     setQuantity(1);
-    setSelectedSize("M");
-    setSelectedColor("Black");
     setModalVisible(true);
   };
 
@@ -50,8 +43,6 @@ export default function WishlistScreen() {
       const cartItem = {
         ...selectedItem,
         quantity,
-        selectedSize,
-        selectedColor,
       };
       addToCart(cartItem);
       toggleWishlist(selectedItem);
@@ -186,57 +177,6 @@ export default function WishlistScreen() {
                   </View>
                 </View>
 
-                {/* Size Selector */}
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>Size</Text>
-                  <View style={styles.sizeGrid}>
-                    {sizes.map((size) => (
-                      <TouchableOpacity
-                        key={size}
-                        style={[
-                          styles.sizeBtn,
-                          selectedSize === size && styles.sizeBtnActive,
-                        ]}
-                        onPress={() => setSelectedSize(size)}
-                      >
-                        <Text
-                          style={[
-                            styles.sizeBtnText,
-                            selectedSize === size && styles.sizeBtnTextActive,
-                          ]}
-                        >
-                          {size}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                {/* Color Selector */}
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>Color</Text>
-                  <View style={styles.colorGrid}>
-                    {colors.map((color) => (
-                      <TouchableOpacity
-                        key={color}
-                        style={[
-                          styles.colorBtn,
-                          selectedColor === color && styles.colorBtnActive,
-                        ]}
-                        onPress={() => setSelectedColor(color)}
-                      >
-                        <View
-                          style={[
-                            styles.colorCircle,
-                            { backgroundColor: getColorValue(color) },
-                          ]}
-                        />
-                        <Text style={styles.colorLabel}>{color}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
                 {/* Confirm Button */}
                 <TouchableOpacity
                   style={styles.confirmBtn}
@@ -255,17 +195,6 @@ export default function WishlistScreen() {
     </SafeAreaView>
   );
 }
-
-const getColorValue = (color: string) => {
-  const colorMap = {
-    Black: "#1A1A1A",
-    White: "#FFFFFF",
-    Navy: "#0F3A7D",
-    Gray: "#9CA3AF",
-    Beige: "#D4A574",
-  };
-  return colorMap[color] || "#1A1A1A";
-};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAF9F6" },
@@ -393,44 +322,6 @@ const styles = StyleSheet.create({
     minWidth: 30,
     textAlign: "center",
   },
-
-  // Size Styles
-  sizeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  sizeBtn: {
-    flex: 0.31,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#EDF2F7",
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sizeBtnActive: { borderColor: "#1A1A1A", backgroundColor: "#1A1A1A" },
-  sizeBtnText: { fontSize: 14, fontWeight: "600", color: "#718096" },
-  sizeBtnTextActive: { color: "#FFFFFF" },
-
-  // Color Styles
-  colorGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  colorBtn: {
-    flex: 0.45,
-    alignItems: "center",
-    paddingVertical: 12,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "transparent",
-    backgroundColor: "#FFFFFF",
-  },
-  colorBtnActive: { borderColor: "#1A1A1A" },
-  colorCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  colorLabel: { fontSize: 12, fontWeight: "500", color: "#4A5568" },
 
   // Confirm Button
   confirmBtn: {
