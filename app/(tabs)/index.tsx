@@ -1,17 +1,17 @@
 ﻿import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Dimensions,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import { BorderRadius, Colors, Shadows, Spacing } from "../../constants/theme";
@@ -39,23 +39,26 @@ export default function HomeScreen() {
 
   const totalItems = useMemo(
     () => cartItems.reduce((total, item) => total + (item.quantity || 1), 0),
-    [cartItems]
+    [cartItems],
   );
 
   // Optimized product filtering
   const filteredProducts = useMemo(() => {
     if (!products || products.length === 0) return [];
-    
+
     return products.filter((p) => {
-      const matchesSearch = !searchQuery || 
+      const matchesSearch =
+        !searchQuery ||
         p.title?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = !activeCategory || p.category?.id === activeCategory;
+      const matchesCategory =
+        !activeCategory || p.category?.id === activeCategory;
       return matchesSearch && matchesCategory;
     });
   }, [products, searchQuery, activeCategory]);
 
   const heroProducts = filteredProducts.slice(0, 3);
-  const trendingProducts = filteredProducts.slice(3, 9);
+  const trendingProducts = filteredProducts.slice(3, 12);
+  const allProducts = filteredProducts; // Show all filtered products
 
   // Check if item is in cart
   const isItemInCart = (productId) => {
@@ -102,7 +105,7 @@ export default function HomeScreen() {
               style={styles.productImage}
               resizeMode="cover"
             />
-            
+
             {/* Wishlist Button - Top Right */}
             <TouchableOpacity
               style={styles.wishlistButton}
@@ -117,10 +120,7 @@ export default function HomeScreen() {
 
             {/* Add to Cart Button - Bottom Right */}
             <TouchableOpacity
-              style={[
-                styles.addButton,
-                inCart && styles.addButtonActive,
-              ]}
+              style={[styles.addButton, inCart && styles.addButtonActive]}
               onPress={(e) => handleAddToCart(e, product)}
               disabled={inCart}
             >
@@ -140,7 +140,7 @@ export default function HomeScreen() {
             <Text style={styles.productTitle} numberOfLines={2}>
               {product.title || "Product"}
             </Text>
-            
+
             {/* Price and Status */}
             <View style={styles.priceRow}>
               <Text style={styles.productPrice}>
@@ -284,7 +284,9 @@ export default function HomeScreen() {
               </View>
 
               <View style={styles.productGrid}>
-                {trendingProducts.slice(0, 4).map((product) => renderProductCard(product))}
+                {trendingProducts
+                  .slice(0, 4)
+                  .map((product) => renderProductCard(product))}
               </View>
             </View>
           )}
@@ -301,7 +303,9 @@ export default function HomeScreen() {
                 <View>
                   <Text style={styles.flashSaleLabel}>⚡ FLASH SALE</Text>
                   <Text style={styles.flashSaleTitle}>Up to 50% OFF</Text>
-                  <Text style={styles.flashSaleSubtitle}>Limited time offer</Text>
+                  <Text style={styles.flashSaleSubtitle}>
+                    Limited time offer
+                  </Text>
                 </View>
                 <TouchableOpacity style={styles.flashSaleButton}>
                   <Text style={styles.flashSaleButtonText}>Shop Now</Text>
@@ -329,7 +333,10 @@ export default function HomeScreen() {
                     onPress={() => router.push(`/product/${product.id}`)}
                     activeOpacity={0.85}
                   >
-                    <PremiumCard variant="elevated" style={styles.recommendedCard}>
+                    <PremiumCard
+                      variant="elevated"
+                      style={styles.recommendedCard}
+                    >
                       <View style={styles.recommendedImageContainer}>
                         <Image
                           source={{ uri: product.images?.[0] || product.image }}
@@ -341,9 +348,17 @@ export default function HomeScreen() {
                           onPress={(e) => handleWishlistToggle(e, product)}
                         >
                           <Ionicons
-                            name={isItemInWishlist(product.id) ? "heart" : "heart-outline"}
+                            name={
+                              isItemInWishlist(product.id)
+                                ? "heart"
+                                : "heart-outline"
+                            }
                             size={18}
-                            color={isItemInWishlist(product.id) ? "#EF4444" : Colors.accent}
+                            color={
+                              isItemInWishlist(product.id)
+                                ? "#EF4444"
+                                : Colors.accent
+                            }
                           />
                         </TouchableOpacity>
                       </View>
@@ -360,14 +375,33 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* Empty State */}
-          {!productsLoading && filteredProducts.length === 0 && products.length > 0 && (
-            <View style={styles.emptyState}>
-              <Ionicons name="search" size={48} color={Colors.muted} />
-              <Text style={styles.emptyStateTitle}>No products found</Text>
-              <Text style={styles.emptyStateText}>Try adjusting your search or filters</Text>
+          {/* All Products Grid */}
+          {!productsLoading && filteredProducts.length > 0 && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>
+                  {activeCategory ? "Category Products" : "All Products"}
+                </Text>
+              </View>
+
+              <View style={styles.productGrid}>
+                {allProducts.map((product) => renderProductCard(product))}
+              </View>
             </View>
           )}
+
+          {/* Empty State */}
+          {!productsLoading &&
+            filteredProducts.length === 0 &&
+            products.length > 0 && (
+              <View style={styles.emptyState}>
+                <Ionicons name="search" size={48} color={Colors.muted} />
+                <Text style={styles.emptyStateTitle}>No products found</Text>
+                <Text style={styles.emptyStateText}>
+                  Try adjusting your search or filters
+                </Text>
+              </View>
+            )}
 
           {/* Bottom Spacing */}
           <View style={{ height: Spacing["3xl"] }} />

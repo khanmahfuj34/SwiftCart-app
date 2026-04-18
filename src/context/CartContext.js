@@ -1,6 +1,5 @@
 ﻿import {
     arrayRemove,
-    arrayUnion,
     doc,
     getDoc,
     onSnapshot,
@@ -56,7 +55,7 @@ export const CartProvider = ({ children }) => {
         }
     }, [user]);
 
-    const addToCart = async (product) => {
+    const addToCart = async (product, quantity = 1) => {
         if (!user) {
             setError("User not authenticated");
             return;
@@ -72,23 +71,26 @@ export const CartProvider = ({ children }) => {
             }
 
             const cleanProduct = {
-                id: product?.id || "",
+                id: product?.id?.toString() || "",
                 title: product?.title || "",
                 price: product?.price || 0,
                 image: imageUrl,
-                quantity: 1,
+                quantity: quantity,
             };
 
             const cartDocRef = doc(db, "cart", user.uid);
             const docSnapshot = await getDoc(cartDocRef);
 
             const existingItems = docSnapshot.exists() ? docSnapshot.data().items || [] : [];
-            const existingItem = existingItems.find((item) => item.id === cleanProduct.id);
+            const existingItemIndex = existingItems.findIndex((item) => item.id === cleanProduct.id);
 
-            if (existingItem) {
-                const updatedItems = existingItems.map((item) =>
-                    item.id === cleanProduct.id ? { ...item, quantity: item.quantity + 1 } : item,
-                );
+            if (existingItemIndex > -1) {
+                const updatedItems = [...existingItems];
+                updatedItems[existingItemIndex] = {
+                    ...updatedItems[existingItemIndex],
+                    quantity: updatedItems[existingItemIndex].quantity + quantity
+                };
+
                 await updateDoc(cartDocRef, {
                     items: updatedItems,
                     updatedAt: new Date(),
@@ -101,7 +103,7 @@ export const CartProvider = ({ children }) => {
 
                 if (docSnapshot.exists()) {
                     await updateDoc(cartDocRef, {
-                        items: arrayUnion(cleanProduct),
+                        items: [...existingItems, cleanProduct],
                         ...userMetadata,
                     });
                 } else {
@@ -204,13 +206,13 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    const getTotalItems = () => {
+    const getTotalItems = useCallback(() => {
         return cartItems.reduce((total, item) => total + item.quantity, 0);
-    };
+    }, [cartItems]);
 
-    const getTotalPrice = () => {
+    const getTotalPrice = useCallback(() => {
         return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-    };
+    }, [cartItems]);
 
     const clearCart = async () => {
         if (!user) {
@@ -232,14 +234,15 @@ export const CartProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        let unsubscribe;
         if (user) {
-            const unsubscribe = fetchCart();
-            return () => {
-                if (unsubscribe) unsubscribe();
-            };
+            unsubscribe = fetchCart();
         } else {
             setCartItems([]);
         }
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, [user, fetchCart]);
 
     const value = {
